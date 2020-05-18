@@ -19,6 +19,9 @@ public:
 	ATank* GetControlledTank() const;
 
 	void BeginPlay() override;
+	void Tick(float DeltaSeconds);
 
 	ATank* GetPlayerTank() const;
+
+	void AimTowardsPlayer() const;
 };
