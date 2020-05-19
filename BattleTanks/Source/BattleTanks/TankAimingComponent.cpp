@@ -2,7 +2,7 @@
 
 
 #include "TankAimingComponent.h"
-
+#include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
 
 // Sets default values for this component's properties
@@ -15,36 +15,40 @@ UTankAimingComponent::UTankAimingComponent()
 	// ...
 }
 
-
-// Called when the game starts
-void UTankAimingComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
-}
-
-
-// Called every frame
-void UTankAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
-void UTankAimingComponent::AimAt(FVector HitLocation)
-{
-	if (Barrel)
-	{
-		auto BarrelLocation = Barrel->GetComponentLocation();
-
-		UE_LOG(LogTemp, Warning, TEXT("%s aiming from %s to %s"), *GetOwner()->GetName(), *BarrelLocation.ToString(), *HitLocation.ToString());
-	}
-}
-
 void UTankAimingComponent::SetBarrelReference(UStaticMeshComponent* BarrelToSet)
 {
 	Barrel = BarrelToSet;
+}
+
+void UTankAimingComponent::AimAt(FVector HitLocation, float LaunchSpeed)
+{
+	if (Barrel)
+	{
+		auto StartLocation = Barrel->GetSocketLocation(FName("Projectile"));
+		FVector LaunchVelocity = FVector(0);
+		
+		if (UGameplayStatics::SuggestProjectileVelocity(
+			this,
+			LaunchVelocity,
+			StartLocation,
+			HitLocation,
+			LaunchSpeed
+		))
+		{
+			auto AimDirection = LaunchVelocity.GetSafeNormal();
+
+			MoveBarrel(AimDirection);
+						
+			UE_LOG(LogTemp, Warning, TEXT("Aiming at %s"), *AimDirection.ToString());
+		}
+	}
+}
+
+void UTankAimingComponent::MoveBarrel(FVector AimDirection)
+{
+	auto BarrelRotator = Barrel->GetForwardVector().Rotation();
+
+	auto AimAsRotator = AimDirection.Rotation();
+
+	auto DeltaRotator = AimAsRotator - BarrelRotator;
 }
