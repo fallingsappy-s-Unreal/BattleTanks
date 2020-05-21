@@ -3,7 +3,7 @@
 
 #include "TankAimingComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Components/StaticMeshComponent.h"
+#include "TankBarrel.h"
 
 // Sets default values for this component's properties
 UTankAimingComponent::UTankAimingComponent()
@@ -15,9 +15,14 @@ UTankAimingComponent::UTankAimingComponent()
 	// ...
 }
 
-void UTankAimingComponent::SetBarrelReference(UStaticMeshComponent* BarrelToSet)
+void UTankAimingComponent::SetBarrelReference(UTankBarrel* BarrelToSet)
 {
 	Barrel = BarrelToSet;
+}
+
+void UTankAimingComponent::SetTurretReference(UTankTurret* TurretToSet)
+{
+	Turret = TurretToSet;
 }
 
 void UTankAimingComponent::AimAt(FVector HitLocation, float LaunchSpeed)
@@ -26,20 +31,32 @@ void UTankAimingComponent::AimAt(FVector HitLocation, float LaunchSpeed)
 	{
 		auto StartLocation = Barrel->GetSocketLocation(FName("Projectile"));
 		FVector LaunchVelocity = FVector(0);
-		
-		if (UGameplayStatics::SuggestProjectileVelocity(
+
+		bool bHaveAimSolution = UGameplayStatics::SuggestProjectileVelocity(
 			this,
 			LaunchVelocity,
 			StartLocation,
 			HitLocation,
-			LaunchSpeed
-		))
+			LaunchSpeed,
+			false,
+			0,
+			0,
+			ESuggestProjVelocityTraceOption::DoNotTrace
+		);
+		
+		if (bHaveAimSolution)
 		{
 			auto AimDirection = LaunchVelocity.GetSafeNormal();
 
 			MoveBarrel(AimDirection);
 						
-			UE_LOG(LogTemp, Warning, TEXT("Aiming at %s"), *AimDirection.ToString());
+			auto Time = GetWorld()->GetTimeSeconds();
+			UE_LOG(LogTemp, Warning, TEXT("%f: Aim Solution Found"), Time)
+		}
+		else
+		{
+			auto Time = GetWorld()->GetTimeSeconds();
+			UE_LOG(LogTemp, Warning, TEXT("%f: No Aim Solution Found"), Time)
 		}
 	}
 }
@@ -51,4 +68,6 @@ void UTankAimingComponent::MoveBarrel(FVector AimDirection)
 	auto AimAsRotator = AimDirection.Rotation();
 
 	auto DeltaRotator = AimAsRotator - BarrelRotator;
+
+	Barrel->Elevate(DeltaRotator.Pitch);
 }
