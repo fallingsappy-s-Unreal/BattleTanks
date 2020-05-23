@@ -3,12 +3,16 @@
 
 #include "Projectile.h"
 
+#include "HeavyProjectileMovementComponent.h"
+
 // Sets default values
 AProjectile::AProjectile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	HeavyProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(FName("HeavyProjectileMovementComponent"));
+	HeavyProjectileMovementComponent->bAutoActivate = false;
 }
 
 // Called when the game starts or when spawned
@@ -23,5 +27,11 @@ void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AProjectile::Launch(float Speed)
+{
+	HeavyProjectileMovementComponent->SetVelocityInLocalSpace(FVector::ForwardVector * Speed);
+	HeavyProjectileMovementComponent->Activate();
 }
 
