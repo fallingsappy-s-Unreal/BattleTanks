@@ -19,9 +19,12 @@ public:
 	
 	void Tick(float DeltaSeconds) override;
 
-private:
+protected:
 
+	UFUNCTION(BlueprintCallable, Category = Setup)
 	ATank* GetControlledTank() const;
+	
+private:
 
 	void AimTowardsCrosshair();
 

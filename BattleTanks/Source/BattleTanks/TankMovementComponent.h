@@ -21,7 +21,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Input)
 	void IntendMoveForward(float Throw);
 
+	UFUNCTION(BlueprintCallable, Category = Input)
+	void IntendTurnRight(float Throw);
+
+	UFUNCTION(BlueprintCallable, Category = Input)
+	void IntendTurnLeft(float Throw);
+
 private:
+	/** path following: request new velocity */
+	void RequestDirectMove(const FVector& MoveVelocity, bool bForceMaxSpeed) override;
+	
 	UTankTrack* LeftTrack = nullptr;
 	UTankTrack* RightTrack = nullptr;
 };
