@@ -6,7 +6,7 @@
 #include "AIController.h"
 #include "TankAIController.generated.h"
 
-class ATank;
+class UTankAimingComponent;
 
 UCLASS()
 class BATTLETANKS_API ATankAIController : public AAIController
@@ -15,6 +15,6 @@ class BATTLETANKS_API ATankAIController : public AAIController
 
 public:
 	void BeginPlay() override;
-	void Tick(float DeltaSeconds);
+	void Tick(float DeltaSeconds) override;
 	float AcceptanceRadius = 3000;
 };
