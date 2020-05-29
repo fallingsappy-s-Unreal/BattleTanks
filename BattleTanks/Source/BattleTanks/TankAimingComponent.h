@@ -31,12 +31,13 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = Firing)
 	void Fire();
-
+	
 protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = State)
-	EFiringStatus FiringStatus = EFiringStatus::Aiming;
-	
+	EFiringStatus FiringStatus = EFiringStatus::Reloading;
+	FVector AimDirection;
+
 private:
 	void MoveBarrelTowards(FVector AimDirection);
 
@@ -56,4 +57,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
 	TSubclassOf<AProjectile> ProjectileBlueprint;
+
+	bool IsBarrelMoving();
+	void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	void BeginPlay() override;
 };
