@@ -19,6 +19,10 @@ public:
 	
 	void Tick(float DeltaSeconds) override;
 
+	UFUNCTION()
+	void OnTankDeath();
+	void SetPawn(APawn* InPawn);
+
 protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = Setup)

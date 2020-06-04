@@ -37,26 +37,32 @@ bool UTankAimingComponent::IsBarrelMoving()
 
 void UTankAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                          FActorComponentTickFunction* ThisTickFunction)
-{
-	//Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	bool isReloaded = (FPlatformTime::Seconds() - LastFireTime) > ReloadTimeInSeconds;
-
-	if (isReloaded)
+{	if (AmmoCount > 0)
 	{
-		if (IsBarrelMoving())
+		//Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+		bool isReloaded = (FPlatformTime::Seconds() - LastFireTime) > ReloadTimeInSeconds;
+
+		if (isReloaded)
 		{
-			FiringStatus = EFiringStatus::Aiming;
+			if (IsBarrelMoving())
+			{
+				FiringStatus = EFiringStatus::Aiming;
+			}
+			else
+			{
+				FiringStatus = EFiringStatus::Locked;
+			}
 		}
-		else
-		{
-			FiringStatus = EFiringStatus::Locked;
-		}
+	}
+	else
+	{
+		FiringStatus = EFiringStatus::OutOfAmmo;
 	}
 }
 
 void UTankAimingComponent::BeginPlay()
 {
-	//Super::BeginPlay();
+	Super::BeginPlay();
 	
 	LastFireTime = FPlatformTime::Seconds();
 }
@@ -89,11 +95,11 @@ void UTankAimingComponent::AimAt(FVector HitLocation)
 	}
 }
 
-void UTankAimingComponent::MoveBarrelTowards(FVector AimDirection)
+void UTankAimingComponent::MoveBarrelTowards(FVector TargetAimDirection)
 {
 	auto BarrelRotator = Barrel->GetForwardVector().Rotation();
 
-	auto AimAsRotator = AimDirection.Rotation();
+	auto AimAsRotator = TargetAimDirection.Rotation();
 
 	auto DeltaRotator = AimAsRotator - BarrelRotator;
 
@@ -113,7 +119,7 @@ void UTankAimingComponent::Fire()
 {
 	if (!ensure(Barrel && ProjectileBlueprint)) return;
 
-	if (FiringStatus != EFiringStatus::Reloading)
+	if (FiringStatus != EFiringStatus::Reloading && AmmoCount > 0)
 	{		
 		auto ProjectileStartLocation = Barrel->GetSocketLocation(FName("Projectile"));
 		auto ProjectileStartRotation = Barrel->GetSocketRotation(FName("Projectile"));
@@ -123,6 +129,19 @@ void UTankAimingComponent::Fire()
 		Projectile->Launch(LaunchSpeed);
 
 		FiringStatus = EFiringStatus::Reloading;
+
+		AmmoCount--;
+		
 		LastFireTime = FPlatformTime::Seconds();
 	}
+}
+
+EFiringStatus UTankAimingComponent::GetFiringStatus() const
+{
+	return FiringStatus;
+}
+
+int32 UTankAimingComponent::GetAmmoLeft() const
+{
+	return AmmoCount;
 }
